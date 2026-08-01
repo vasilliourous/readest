@@ -33,7 +33,7 @@ mod mobi_parser;
 mod nightly_update;
 mod parser_common;
 mod range_file;
-mod sentry_config;
+mod webview_info;
 #[cfg(desktop)]
 mod spawn_fresh_browser;
 mod transfer_file;
@@ -294,13 +294,12 @@ fn is_updater_disabled() -> bool {
     updater_disabled()
 }
 
-// Record the WebView engine/version (parsed from the app's User-Agent) so Sentry
-// events can be correlated with WebView version. Called once from
-// `NativeAppService.init()`; no-op when Sentry is disabled.
+// Record the WebView engine/version (parsed from the app's User-Agent). Called
+// once from `NativeAppService.init()`; no-op when Sentry is disabled.
 #[tauri::command]
 fn set_webview_info(user_agent: String) {
-    if let Some((engine, version)) = sentry_config::parse_webview_info(&user_agent) {
-        sentry_config::set_webview_info(engine, version);
+    if let Some((engine, version)) = webview_info::parse_webview_info(&user_agent) {
+        webview_info::set_webview_info(engine, version);
     }
 }
 
