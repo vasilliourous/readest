@@ -24,6 +24,9 @@ Default permissions for the plugin
 - `allow-get-safe-area-insets`
 - `allow-get-screen-brightness`
 - `allow-set-screen-brightness`
+- `allow-has-ambient-light-sensor`
+- `allow-start-ambient-light-updates`
+- `allow-stop-ambient-light-updates`
 - `allow-get-external-sdcard-path`
 - `allow-open-external-url`
 - `allow-show-lookup-popover`
@@ -602,6 +605,32 @@ Enables the get_system_color_scheme command without any pre-configured scope.
 <td>
 
 Denies the get_system_color_scheme command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:allow-has-ambient-light-sensor`
+
+</td>
+<td>
+
+Enables the has_ambient_light_sensor command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:deny-has-ambient-light-sensor`
+
+</td>
+<td>
+
+Denies the has_ambient_light_sensor command without any pre-configured scope.
 
 </td>
 </tr>
@@ -1278,6 +1307,58 @@ Enables the show_lookup_popover command without any pre-configured scope.
 <td>
 
 Denies the show_lookup_popover command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:allow-start-ambient-light-updates`
+
+</td>
+<td>
+
+Enables the start_ambient_light_updates command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:deny-start-ambient-light-updates`
+
+</td>
+<td>
+
+Denies the start_ambient_light_updates command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:allow-stop-ambient-light-updates`
+
+</td>
+<td>
+
+Enables the stop_ambient_light_updates command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`native-bridge:deny-stop-ambient-light-updates`
+
+</td>
+<td>
+
+Denies the stop_ambient_light_updates command without any pre-configured scope.
 
 </td>
 </tr>
