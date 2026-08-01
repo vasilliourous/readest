@@ -137,7 +137,12 @@ describe('/api/send/senders — plan gate (removed)', () => {
     expect(res._status).not.toBe(403);
   });
 
-  test.each<UserPlan>(['free', 'plus', 'pro', 'purchase'])('lets %s users through', async (plan) => {
+  test.each<UserPlan>([
+    'free',
+    'plus',
+    'pro',
+    'purchase',
+  ])('lets %s users through', async (plan) => {
     getUserProfilePlanMock.mockReturnValue(plan);
     const res = makeRes();
     await sendersHandler(makeReq('GET'), res as unknown as NextApiResponse);
