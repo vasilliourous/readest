@@ -6,9 +6,11 @@ name: Android E2E (CDP)
 # `e2e-android`.
 
 on:
+  # Disabled for fork — the nightly cron failed on every run here (the lane
+  # needs an emulator/KVM setup that does not work on this fork's runners).
+  # Still available on demand via workflow_dispatch, or by labelling a PR
+  # `e2e-android`.
   workflow_dispatch:
-  schedule:
-    - cron: '30 19 * * *'
   pull_request:
     types: [labeled, synchronize]
 
