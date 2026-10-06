@@ -98,6 +98,49 @@ jobs:
             gir1.2-javascriptcoregtk-4.1 gir1.2-webkit2-4.1 \
             libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
+      # The npm cli-cef bundles the AppImage with a broken quick-sharun fork
+      # and cannot be pointed elsewhere; it dies with
+      #   quick-sharun command failed to run: ... set: can't access tty
+      # Build the CLI from readest/tauri instead: its sharun_cef.rs pins
+      # pkgforge's deployment-array quoting fix (Anylinux-AppImages#855) and
+      # runs the tooling with bash and streamed output. Rev-pinned; the marker
+      # skips the rebuild while rust-cache keeps ~/.cargo/bin.
+      # scripts/tauri.mjs runs `cargo tauri` when TAURI_CEF_CARGO=1.
+      - name: Install the CEF tauri CLI from readest/tauri (linux only)
+        if: matrix.config.release == 'linux'
+        run: |
+          set -euo pipefail
+          rev=6beeb209b5514f597a26f48b7a5b9fe4c59b5f12
+          marker="$HOME/.cargo/bin/.cargo-tauri-rev"
+          if [ -x "$HOME/.cargo/bin/cargo-tauri" ] && [ "$(cat "$marker" 2>/dev/null)" = "$rev" ]; then
+            echo "cargo-tauri at $rev already installed"
+            exit 0
+          fi
+          cargo install tauri-cli --git https://github.com/readest/tauri --rev "$rev" --locked --force
+          echo "$rev" > "$marker"
+
+      # Chromium dlopens NSS, libpulse and libspeechd by soname; whatever the
+      # bundle lacks comes from the host at run time and fails against the
+      # bundled glibc on any newer distro. Debian keeps the NSS modules in
+      # <triple>/nss/ where quick-sharun's Arch-layout globs miss them, and
+      # nothing deploys libspeechd. libxkbcommon-x11 is dlopened by winit when
+      # it opens its X11 loop (the CEF runtime forces X11 even on Wayland);
+      # the runner image has no copy for quick-sharun to deploy.
+      - name: Stage CEF AppImage runtime libraries (linux only)
+        if: matrix.config.release == 'linux'
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y libnss3 libpulse0 libspeechd2 libxkbcommon-x11-0
+          nss_dir=$(dirname "$(ls /usr/lib/*-linux-gnu/nss/libsoftokn3.so)")
+          lib_dir=${nss_dir%/nss}
+          sudo cp -f --remove-destination "$nss_dir"/*.so "$lib_dir/"
+          # +=: tauri.conf.json already ships the AppRun hook entry.
+          conf=apps/readest-app/src-tauri/tauri.conf.json
+          jq --arg d "$lib_dir" '.bundle.linux.appimage.files += {
+              "/usr/lib/libspeechd.so.2": ($d + "/libspeechd.so.2"),
+              "/usr/lib/libxkbcommon-x11.so.0": ($d + "/libxkbcommon-x11.so.0")
+            }' "$conf" > "$conf.tmp" && mv "$conf.tmp" "$conf"
+
       - name: Build Tauri app
         # This script is bash. Windows runners default to PowerShell, which
         # cannot parse `if [ ... ]; then` and fails instantly (exit 1 in <1s).
@@ -106,6 +149,10 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=8192'
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
+          # Linux only: build with the readest/tauri CLI installed above, so
+          # the AppImage bundles through the patched quick-sharun. scripts/
+          # tauri.mjs switches to `cargo tauri` when this is 1.
+          TAURI_CEF_CARGO: ${{ matrix.config.release == 'linux' && '1' || '' }}
         run: |
           if [ "${{ matrix.config.release }}" = "android" ]; then
             rm -rf src-tauri/gen/android
