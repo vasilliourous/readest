@@ -157,12 +157,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   postPatch = ''
+    # The substitutions below are idempotent on purpose. This fork already
+    # ships `createUpdaterArtifacts: false` (it builds without signing keys),
+    # and `--replace-fail` would abort the build when the target text has
+    # already been replaced. `--replace-warn` matches upstream-or-fork input
+    # alike.
     substituteInPlace src-tauri/tauri.conf.json \
-      --replace-fail \
+      --replace-warn \
         '"beforeBuildCommand": "pnpm build && pnpm upload-sourcemaps"' \
         '"beforeBuildCommand": "pnpm build"' \
-      --replace-fail '"createUpdaterArtifacts": true' '"createUpdaterArtifacts": false' \
-      --replace-fail '"productName": "Readest"' '"productName": "readest"'
+      --replace-warn '"createUpdaterArtifacts": true' '"createUpdaterArtifacts": false' \
+      --replace-warn '"productName": "Readest"' '"productName": "readest"'
     jq 'del(.plugins."deep-link")' src-tauri/tauri.conf.json | sponge src-tauri/tauri.conf.json
     substituteInPlace src/services/constants.ts \
       --replace-fail "autoCheckUpdates: true" "autoCheckUpdates: false" \
