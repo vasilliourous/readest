@@ -48,11 +48,11 @@ mod nightly_update;
 mod parser_common;
 mod pdf_parser;
 mod range_file;
-mod webview_info;
 #[cfg(desktop)]
 mod spawn_fresh_browser;
 mod transfer_file;
 mod web_browser;
+mod webview_info;
 #[cfg(desktop)]
 mod window_state;
 #[cfg(target_os = "windows")]
@@ -549,7 +549,8 @@ pub fn run() {
         builder.runtime(cef)
     };
 
-    let builder = builder        .plugin(
+    let builder = builder
+        .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Info)
                 .level_for("tracing", log::LevelFilter::Warn)
